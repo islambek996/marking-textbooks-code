@@ -40,6 +40,35 @@ function makeBox(item){
   return el;
 }
 
+const cropPresets = [
+  [/^s4_step/, { zoom: 1.55, pos: '50% 68%' }],
+  [/^s6_t/, { zoom: 1.45, pos: '50% 60%' }],
+  [/^s5_s[1-5]/, { zoom: 1.42, pos: '50% 47%' }],
+  [/^s5_s[6-9]/, { zoom: 1.28, pos: '50% 50%' }],
+  [/^s3_operator/, { zoom: 1.28, pos: '50% 72%' }],
+  [/^s3_edu/, { zoom: 1.08, pos: '50% 58%' }],
+  [/^s3_ministry/, { zoom: 1.08, pos: '50% 50%' }],
+  [/^s4_bottom/, { zoom: 1.24, pos: '50% 62%' }],
+  [/^s6_center/, { zoom: 1.22, pos: '50% 48%' }],
+  [/^s7_cit/, { zoom: 1.35, pos: '50% 58%' }],
+  [/^s7_core|^s7_edu|^s7_gov/, { zoom: 1.28, pos: '50% 52%' }],
+  [/^s7_phone/, { zoom: 1.22, pos: '50% 52%' }],
+  [/^s7_contacts/, { zoom: 1.08, pos: '50% 50%' }],
+  [/^s8_cit/, { zoom: 1.20, pos: '50% 50%' }],
+  [/^s8_city/, { zoom: 1.03, pos: '50% 50%' }],
+  [/^s8_core/, { zoom: 1.22, pos: '50% 52%' }],
+  [/^s8_edu/, { zoom: 1.20, pos: '50% 50%' }],
+  [/^s8_gov/, { zoom: 1.22, pos: '50% 68%' }],
+  [/^s8_phone/, { zoom: 1.28, pos: '72% 50%' }],
+  [/^s8_contacts/, { zoom: 1.08, pos: '50% 50%' }],
+  [/^s2_paper/, { zoom: 1.08, pos: '76% 50%' }],
+];
+
+function resolveCropPreset(src=''){
+  const name=src.split('/').pop().replace(/\.webp$/i,'');
+  return cropPresets.find(([re])=>re.test(name))?.[1] || {};
+}
+
 function makeImage(item){
   const el=document.createElement('div');
   el.className='layer image ' + (item.radius ? 'round':'');
@@ -48,8 +77,13 @@ function makeImage(item){
   const im=document.createElement('img');
   im.src=item.src;
   im.alt='';
-  im.style.objectPosition=item.objectPosition||'50% 50%';
+  const preset=resolveCropPreset(item.src);
+  im.style.objectPosition=item.objectPosition||preset.pos||'50% 50%';
   if(item.fit) im.style.objectFit=item.fit;
+  if(item.cropZoom || preset.zoom){
+    im.style.transformOrigin='center center';
+    im.style.transform=`scale(${item.cropZoom ?? preset.zoom})`;
+  }
   el.appendChild(im);
   return el;
 }
